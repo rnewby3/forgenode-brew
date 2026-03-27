@@ -198,22 +198,24 @@ export default async function handler(req) {
     };
 
     let brewLink = null;
+    let brewLinkDebug = null;
     try {
       const blResp = await fetch(BREW_LINK_API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(brewPayload)
       });
+      const raw = await blResp.text();
+      brewLinkDebug = { status: blResp.status, body: raw.slice(0, 200) };
       if (blResp.ok) {
-        const raw = await blResp.text();
         brewLink = raw.replace(/'/g, '').trim();
         if (!brewLink.startsWith('http')) brewLink = null;
       }
     } catch (e) {
-      // brew.link unavailable, continue without it
+      brewLinkDebug = { error: e.message };
     }
 
-    return new Response(JSON.stringify({ profile: profileData, brewLink }), {
+    return new Response(JSON.stringify({ profile: profileData, brewLink, brewLinkDebug }), {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
