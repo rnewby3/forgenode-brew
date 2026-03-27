@@ -125,7 +125,7 @@ export default async function handler(req) {
           'anthropic-beta': 'web-search-2025-03-05'
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-sonnet-4-5',
           max_tokens: 2000,
           system: BREW_SYSTEM_PROMPT,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
@@ -134,6 +134,7 @@ export default async function handler(req) {
       });
 
       const claudeData = await claudeResp.json();
+      if (claudeData.error) throw new Error(`Anthropic: ${claudeData.error.message}`);
       const text = claudeData.content.filter(x => x.type === 'text').map(x => x.text).join('');
       const clean = text.replace(/```json|```/g, '').trim();
       profileData = JSON.parse(clean);
@@ -147,7 +148,7 @@ export default async function handler(req) {
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-sonnet-4-5',
           max_tokens: 1500,
           system: ADJUST_SYSTEM_PROMPT,
           messages: [{
@@ -158,6 +159,7 @@ export default async function handler(req) {
       });
 
       const claudeData = await claudeResp.json();
+      if (claudeData.error) throw new Error(`Anthropic: ${claudeData.error.message}`);
       const text = claudeData.content.filter(x => x.type === 'text').map(x => x.text).join('');
       profileData = JSON.parse(text.replace(/```json|```/g, '').trim());
     }
