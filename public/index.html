@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0c0b09">
+<title>/brew — Fellow Aiden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0b09;
+    --surface: #161410;
+    --surface2: #1e1b16;
+    --border: #2a2620;
+    --border2: #3a352c;
+    --accent: #c9a96e;
+    --accent2: #e8c98a;
+    --accent-dim: rgba(201,169,110,0.12);
+    --text: #e8e2d8;
+    --muted: #7a7060;
+    --muted2: #5a5248;
+    --green: #5aab7a;
+    --red: #c06050;
+    --mono: 'DM Mono', monospace;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    min-height: 100dvh;
+    overscroll-behavior: none;
+  }
+
+  body {
+    padding: 0;
+    padding-bottom: calc(1rem + var(--safe-bottom));
+  }
+
+  /* Header */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.25rem 0.875rem;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .header-cmd {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .header-sub {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* Main content */
+  .main {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 1.25rem 1.25rem 2rem;
+  }
+
+  /* Phases */
+  .phase { display: none; flex-direction: column; gap: 1rem; }
+  .phase.active { display: flex; }
+
+  /* Form elements */
+  label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  input[type="url"], input[type="text"], textarea, select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 15px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  textarea { resize: none; min-height: 72px; line-height: 1.5; }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237a7060' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
+  select option { background: #1e1b16; }
+
+  /* Buttons */
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: #0c0b09;
+    border: none;
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background 0.15s, transform 0.1s;
+    -webkit-appearance: none;
+  }
+  .btn-primary:active { background: var(--accent2); transform: scale(0.98); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    -webkit-appearance: none;
+  }
+  .btn-ghost:active { border-color: var(--accent); color: var(--accent); }
+
+  /* Section title */
+  .section-title {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 24px;
+    color: var(--accent);
+    line-height: 1.2;
+  }
+
+  /* Tags */
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  /* Settings card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .card-head {
+    background: var(--surface2);
+    padding: 10px 16px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+  }
+  .card-body { padding: 4px 0; }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label { font-size: 13px; color: var(--muted); flex-shrink: 0; }
+  .stat-val { font-size: 13px; color: var(--text); font-weight: 500; text-align: right; }
+  .temp-pills { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+  .temp-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 11px;
+    color: var(--accent);
+  }
+
+  /* brew.link CTA — the hero element */
+  .brew-link-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .brew-link-btn {
+    display: block;
+    width: 100%;
+    background: var(--accent);
+    color: #0c0b09;
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 500;
+    padding: 18px 20px;
+    border-radius: 14px;
+    text-decoration: none;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: background 0.15s, transform 0.1s;
+    -webkit-appearance: none;
+  }
+  .brew-link-btn:active { background: var(--accent2); transform: scale(0.98); }
+  .brew-link-btn.loading { opacity: 0.5; pointer-events: none; }
+  .brew-link-url {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    word-break: break-all;
+    padding: 0 4px;
+  }
+  .brew-link-url a { color: var(--muted2); text-decoration: none; }
+
+  /* Unavailable state */
+  .brew-link-manual {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  /* Note */
+  .note {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  /* Divider */
+  .divider { border: none; border-top: 1px solid var(--border); }
+
+  /* Log */
+  .log {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 12px;
+    line-height: 1.9;
+    min-height: 80px;
+  }
+  .log-line { color: var(--muted); }
+  .log-line.ok { color: var(--green); }
+  .log-line.err { color: var(--red); }
+  .log-line.hi { color: var(--accent); }
+
+  /* Spinner */
+  .spin {
+    display: inline-block;
+    width: 11px; height: 11px;
+    border: 1.5px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Feedback buttons */
+  .feedback-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .feedback-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 12px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    -webkit-appearance: none;
+  }
+  .feedback-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  /* Bottom action row */
+  .action-row { display: flex; gap: 8px; }
+  .action-row .btn-ghost { flex: 1; text-align: center; }
+
+  /* Or divider */
+  .or-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 10px;
+    color: var(--muted2);
+    letter-spacing: 1px;
+  }
+  .or-row::before, .or-row::after { content: ''; flex: 1; border-top: 1px solid var(--border); }
+
+  /* Manual toggle */
+  .manual-toggle {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 0;
+    -webkit-appearance: none;
+  }
+  .manual-fields { display: none; flex-direction: column; gap: 1rem; }
+  .manual-fields.open { display: flex; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Meta row */
+  .meta {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.9;
+  }
+  .meta span { color: var(--muted2); margin-left: 4px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-cmd">/brew</span>
+  <span class="header-sub">Fellow Aiden</span>
+</div>
+
+<div class="main">
+
+  <!-- INPUT PHASE -->
+  <div class="phase active" id="phase-input">
+    <div>
+      <label>Coffee product URL</label>
+      <input id="coffeeUrl" type="url" inputmode="url" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="https://redroostercoffee.com/products/...">
+      <p style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6">Paste any roaster product page. AI extracts roast, origin, process, and notes automatically.</p>
+    </div>
+
+    <div class="or-row">OR</div>
+    <button class="manual-toggle" id="manual-toggle-btn" onclick="toggleManual()">Enter details manually ↓</button>
+
+    <div class="manual-fields" id="manual-fields">
+      <div>
+        <label>Coffee name</label>
+        <input id="m-title" type="text" placeholder="e.g. Rwanda Agaseke Washed">
+      </div>
+      <div class="row2">
+        <div><label>Roaster</label><input id="m-roaster" type="text" placeholder="Roaster"></div>
+        <div><label>Origin</label><input id="m-origin" type="text" placeholder="Country"></div>
+      </div>
+      <div class="row2">
+        <div>
+          <label>Roast</label>
+          <select id="m-roast">
+            <option value="">—</option>
+            <option>Light</option><option>Light-Medium</option>
+            <option>Medium</option><option>Medium-Dark</option><option>Dark</option>
+          </select>
+        </div>
+        <div>
+          <label>Process</label>
+          <select id="m-process">
+            <option value="">—</option>
+            <option>Washed</option><option>Natural</option><option>Honey</option>
+            <option>Carbonic Maceration</option><option>Anaerobic Natural</option>
+            <option>Anaerobic Washed</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label>Tasting notes</label>
+        <textarea id="m-notes" placeholder="Flavor descriptors..."></textarea>
+      </div>
+    </div>
+
+    <div>
+      <label>Brew mode</label>
+      <select id="brewmode">
+        <option value="both">Both (Single Serve + Batch)</option>
+        <option value="single">Single Serve only</option>
+        <option value="batch">Batch only</option>
+      </select>
+    </div>
+
+    <button class="btn-primary" onclick="startBrew()">Generate brew profile</button>
+  </div>
+
+  <!-- GENERATING PHASE -->
+  <div class="phase" id="phase-generating">
+    <div class="section-title" id="gen-title">Brewing...</div>
+    <div class="log" id="gen-log"></div>
+  </div>
+
+  <!-- RESULTS PHASE -->
+  <div class="phase" id="phase-results">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <div class="section-title" id="res-title">—</div>
+      <div class="tags" id="res-tags"></div>
+    </div>
+
+    <div class="meta" id="res-meta"></div>
+    <p class="note" id="res-why"></p>
+
+    <!-- THE MAIN CTA -->
+    <div class="brew-link-cta" id="brew-link-area">
+      <div style="display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)"><span class="spin"></span>Generating brew.link...</div>
+    </div>
+
+    <!-- Single serve -->
+    <div class="card" id="ss-card" style="display:none">
+      <div class="card-head">Single serve</div>
+      <div class="card-body" id="ss-body"></div>
+    </div>
+
+    <!-- Batch -->
+    <div class="card" id="batch-card" style="display:none">
+      <div class="card-head">Batch</div>
+      <div class="card-body" id="batch-body"></div>
+    </div>
+
+    <!-- Core -->
+    <div class="card">
+      <div class="card-head">Core</div>
+      <div class="card-body" id="core-body"></div>
+    </div>
+
+    <!-- Grind -->
+    <div class="card">
+      <div class="card-head">Grind · DF64 Gen2 (0–90)</div>
+      <div class="card-body" id="grind-body"></div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Taste feedback -->
+    <div>
+      <label>How did it taste?</label>
+      <div class="feedback-grid">
+        <button class="feedback-btn" onclick="toggleFeedback(this,'too bitter')">Too bitter</button>
+        <button class="feedback-btn" onclick="toggleFeedback(this,'too sour/acidic')">Too sour</button>
+        <button class="feedback-btn" onclick="toggleFeedback(this,'too weak/watery')">Too weak</button>
+        <button class="feedback-btn" onclick="toggleFeedback(this,'too strong/harsh')">Too strong</button>
+        <button class="feedback-btn" onclick="toggleFeedback(this,'muddy/heavy')">Muddy</button>
+        <button class="feedback-btn" onclick="toggleFeedback(this,'lacking sweetness')">Flat</button>
+        <button class="feedback-btn" onclick="toggleFeedback(this,'over-fermented/funky')">Too funky</button>
+        <button class="feedback-btn" onclick="toggleFeedback(this,'lost clarity')">Lost clarity</button>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="adjust-btn" onclick="adjustBrew()" style="display:none">Adjust profile</button>
+
+    <div class="action-row">
+      <button class="btn-ghost" onclick="goBack()">← New brew</button>
+      <button class="btn-ghost" onclick="copySettings()">Copy settings</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let currentProfile = null;
+  let currentBrewLink = null;
+  let selectedFeedback = [];
+  let manualOpen = false;
+
+  function setPhase(p) {
+    document.querySelectorAll('.phase').forEach(x => x.classList.remove('active'));
+    document.getElementById('phase-' + p).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function log(msg, cls = '') {
+    const el = document.getElementById('gen-log');
+    el.innerHTML += `<div class="log-line ${cls}">${msg}</div>`;
+  }
+
+  function toggleManual() {
+    manualOpen = !manualOpen;
+    document.getElementById('manual-fields').classList.toggle('open', manualOpen);
+    document.getElementById('manual-toggle-btn').textContent = manualOpen ? 'Hide manual fields ↑' : 'Enter details manually ↓';
+  }
+
+  function toggleFeedback(btn, val) {
+    btn.classList.toggle('active');
+    selectedFeedback = btn.classList.contains('active')
+      ? [...selectedFeedback, val]
+      : selectedFeedback.filter(x => x !== val);
+    document.getElementById('adjust-btn').style.display = selectedFeedback.length ? 'block' : 'none';
+  }
+
+  async function startBrew() {
+    const url = document.getElementById('coffeeUrl').value.trim();
+    const brewmode = document.getElementById('brewmode').value;
+
+    const manual = {
+      title: document.getElementById('m-title').value.trim(),
+      roaster: document.getElementById('m-roaster').value.trim(),
+      origin: document.getElementById('m-origin').value.trim(),
+      roast: document.getElementById('m-roast').value,
+      process: document.getElementById('m-process').value,
+      notes: document.getElementById('m-notes').value.trim(),
+    };
+
+    if (!url && !manual.title && !manual.notes) {
+      alert('Paste a product URL or enter some coffee details.');
+      return;
+    }
+
+    setPhase('generating');
+    document.getElementById('gen-title').textContent = url ? 'Fetching coffee...' : (manual.title || 'Building profile...');
+    document.getElementById('gen-log').innerHTML = '';
+    currentProfile = null;
+    currentBrewLink = null;
+
+    log(url ? '<span class="spin"></span>Fetching product page...' : '<span class="spin"></span>Analyzing coffee...');
+
+    try {
+      const resp = await fetch('/api/brew', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'generate',
+          coffeeUrl: url || null,
+          manualDetails: url ? null : manual,
+          brewmode
+        })
+      });
+
+      if (!resp.ok) throw new Error('Server error ' + resp.status);
+      const data = await resp.json();
+
+      if (data.error) throw new Error(data.error);
+
+      currentProfile = data.profile;
+      currentBrewLink = data.brewLink;
+
+      log(`${data.profile.title} · ${data.profile.roastLevel} · ${data.profile.process}`, 'ok');
+      if (data.brewLink) log('brew.link generated ✓', 'ok');
+      else log('brew.link unavailable — settings shown below', 'err');
+
+      setTimeout(() => renderResults(data.profile, data.brewLink, brewmode), 300);
+
+    } catch (err) {
+      log('Error: ' + err.message, 'err');
+    }
+  }
+
+  function renderResults(p, brewLink, brewmode) {
+    document.getElementById('res-title').textContent = p.title;
+
+    const tags = document.getElementById('res-tags');
+    tags.innerHTML = [p.roastLevel, p.process].filter(Boolean)
+      .map(t => `<span class="tag">${t}</span>`).join('');
+
+    const meta = document.getElementById('res-meta');
+    const parts = [];
+    if (p.roaster) parts.push(`Roaster<span>${p.roaster}</span>`);
+    if (p.origin) parts.push(`Origin<span>${p.origin}</span>`);
+    meta.innerHTML = parts.join(' &nbsp;·&nbsp; ');
+
+    document.getElementById('res-why').textContent =
+      [p.whyItWorks, p.expectedResult].filter(Boolean).join(' ');
+
+    // brew.link hero CTA
+    const blArea = document.getElementById('brew-link-area');
+    if (brewLink) {
+      blArea.innerHTML = `
+        <a class="brew-link-btn" href="${brewLink}">
+          Open in Fellow App ↗
+        </a>
+        <div class="brew-link-url"><a href="${brewLink}">${brewLink}</a></div>`;
+    } else {
+      blArea.innerHTML = `<div class="brew-link-manual">brew.link unavailable — enter the settings below manually in the Fellow app</div>`;
+    }
+
+    // Core
+    document.getElementById('core-body').innerHTML =
+      sRow('Ratio', '1:' + p.ratio) +
+      sRow('Bloom ratio', '1:' + p.bloomRatio) +
+      sRow('Bloom time', p.bloomDuration + 's') +
+      sRow('Bloom temp', p.bloomTemperature + '°C');
+
+    // Single serve
+    const ssCard = document.getElementById('ss-card');
+    if (brewmode !== 'batch') {
+      ssCard.style.display = 'block';
+      document.getElementById('ss-body').innerHTML =
+        sRow('Pulses', p.ssPulsesNumber) +
+        sRow('Interval', p.ssPulsesInterval + 's') +
+        tRow('Temps', p.ssPulseTemperatures);
+    }
+
+    // Batch
+    const bCard = document.getElementById('batch-card');
+    if (brewmode !== 'single') {
+      bCard.style.display = 'block';
+      document.getElementById('batch-body').innerHTML =
+        sRow('Pulses', p.batchPulsesNumber) +
+        sRow('Interval', p.batchPulsesInterval + 's') +
+        tRow('Temps', p.batchPulseTemperatures);
+    }
+
+    // Grind
+    document.getElementById('grind-body').innerHTML =
+      sRow('Single serve', `Dial ~${p.grindSingleDf64} (~${p.grindSingleMicrons}μm)`) +
+      sRow('Batch', `Dial ~${p.grindBatchDf64} (~${p.grindBatchMicrons}μm)`);
+
+    selectedFeedback = [];
+    document.querySelectorAll('.feedback-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('adjust-btn').style.display = 'none';
+
+    setPhase('results');
+  }
+
+  async function adjustBrew() {
+    if (!selectedFeedback.length || !currentProfile) return;
+    setPhase('generating');
+    document.getElementById('gen-title').textContent = 'Adjusting...';
+    document.getElementById('gen-log').innerHTML = '';
+    log('Feedback: ' + selectedFeedback.join(', '), 'hi');
+    log('<span class="spin"></span>Computing adjustments...');
+
+    try {
+      const resp = await fetch('/api/brew', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'adjust',
+          profile: currentProfile,
+          feedback: selectedFeedback
+        })
+      });
+
+      if (!resp.ok) throw new Error('Server error ' + resp.status);
+      const data = await resp.json();
+      if (data.error) throw new Error(data.error);
+
+      currentProfile = data.profile;
+      currentBrewLink = data.brewLink;
+
+      log('Adjusted ✓', 'ok');
+      if (data.brewLink) log('New brew.link ready ✓', 'ok');
+
+      const brewmode = document.getElementById('brewmode').value;
+      setTimeout(() => renderResults(data.profile, data.brewLink, brewmode), 300);
+
+    } catch (err) {
+      log('Error: ' + err.message, 'err');
+    }
+  }
+
+  function goBack() {
+    setPhase('input');
+    currentProfile = null;
+    currentBrewLink = null;
+    document.getElementById('ss-card').style.display = 'none';
+    document.getElementById('batch-card').style.display = 'none';
+    document.getElementById('brew-link-area').innerHTML = '';
+  }
+
+  function copySettings() {
+    if (!currentProfile) return;
+    const p = currentProfile;
+    const txt = `${p.title} — ${p.roastLevel || ''} ${p.process || ''}
+Ratio 1:${p.ratio} | Bloom ${p.bloomRatio}:1 · ${p.bloomDuration}s · ${p.bloomTemperature}°C
+Single: ${(p.ssPulseTemperatures || []).join('→')}°C · ${p.ssPulsesNumber} pulses · ${p.ssPulsesInterval}s
+Batch:  ${(p.batchPulseTemperatures || []).join('→')}°C · ${p.batchPulsesNumber} pulses · ${p.batchPulsesInterval}s
+DF64 Gen2: ~${p.grindSingleDf64} single / ~${p.grindBatchDf64} batch
+brew.link: ${currentBrewLink || 'N/A'}`;
+    navigator.clipboard.writeText(txt).catch(() => {});
+  }
+
+  function sRow(label, val) {
+    return `<div class="stat-row"><span class="stat-label">${label}</span><span class="stat-val">${val}</span></div>`;
+  }
+  function tRow(label, temps) {
+    const pills = (temps || []).map((t, i) => `<span class="temp-pill">P${i + 1} ${t}°C</span>`).join('');
+    return `<div class="stat-row"><span class="stat-label">${label}</span><div class="temp-pills">${pills}</div></div>`;
+  }
+</script>
+</body>
+</html>
