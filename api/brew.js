@@ -78,6 +78,13 @@ Adjustment rules:
 - Lost clarity: raise temps slightly, fewer pulses, shorter intervals
 Return ONLY valid JSON with same structure. Update whyItWorks to explain the adjustments made.`;
 
+function extractJson(text) {
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error('No JSON object found in Claude response');
+  return JSON.parse(text.slice(start, end + 1));
+}
+
 export default async function handler(req) {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
@@ -137,8 +144,7 @@ export default async function handler(req) {
       if (claudeData.error) throw new Error(`Anthropic: ${claudeData.error.message}`);
       const text = claudeData.content.filter(x => x.type === 'text').map(x => x.text).join('');
       if (!text) throw new Error('No text response from Claude — web search may have failed');
-      const clean = text.replace(/```json|```/g, '').trim();
-      profileData = JSON.parse(clean);
+      profileData = extractJson(text);
 
     } else if (action === 'adjust') {
       const claudeResp = await fetch(ANTHROPIC_API, {
@@ -162,7 +168,7 @@ export default async function handler(req) {
       const claudeData = await claudeResp.json();
       if (claudeData.error) throw new Error(`Anthropic: ${claudeData.error.message}`);
       const text = claudeData.content.filter(x => x.type === 'text').map(x => x.text).join('');
-      profileData = JSON.parse(text.replace(/```json|```/g, '').trim());
+      profileData = extractJson(text);
     }
 
     if (!profileData) {
